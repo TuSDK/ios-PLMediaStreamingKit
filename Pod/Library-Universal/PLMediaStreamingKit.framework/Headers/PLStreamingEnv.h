@@ -11,27 +11,39 @@
 
 @interface PLStreamingEnv : NSObject
 
-/**
- @brief 初始化 StreamingSession 的运行环境，需要在 -application:didFinishLaunchingWithOptions: 方法下调用该方法，
+/*!
+ @abstract 初始化 StreamingSession 的运行环境，需要在 -application:didFinishLaunchingWithOptions: 方法下调用该方法，
  
- @warning 不调用该方法将导致 PLStreamingSession 对象无法初始化
+ @warning 低于 v3.0.3 版本，需要调用该方法初始化 PLStreamingEnv，否则将导致 PLStreamingSession 对象无法初始化
  */
-+(void)initEnv;
++(void)initEnv __deprecated_msg("Method deprecated in v3.0.3. Use `initEnvWithUserUID:`");;
 
-/**
- @brief 判断当前环境是否已经初始化
+/*!
+ @abstract 初始化 StreamingSession 的运行环境，需要在 -application:didFinishLaunchingWithOptions: 方法下调用该方法，
+ 
+ @param UID 每个用户的唯一标识
+ 
+ @since v3.0.3
+ 
+ @warning initEnv 已废弃，需要调用该方法初始化 PLStreamingEnv，否则将导致 PLStreamingSession 对象无法初始化
+ */
+
++(void)initEnvWithUserUID:(NSString *)UID;
+
+/*!
+ @abstract 判断当前环境是否已经初始化
  
  @return 已初始化返回 YES，否则为 NO
  */
 +(BOOL)isInited;
 
-/**
- @brief 获取 QoS 的采样间隔
+/*!
+ @abstract 获取 QoS 的采样间隔
  */
 +(NSUInteger)getSampleInterval;
 
-/**
- @brief 是否打开测速功能，默认关闭
+/*!
+ @abstract 是否打开测速功能，默认关闭
  
  @param flag 开启为 YES，否则为 NO
  */
@@ -54,8 +66,21 @@
  */
 + (void)setLogLevel:(PLStreamLogLevel)logLevel;
 
+/*!
+ @abstract   获取设备 ID。
+ */
 + (NSString *)deviceID;
 
+/*!
+ @abstract   设置设备 ID。
+*/
 + (void)setDeviceID:(NSString *)deviceID;
+
+/*!
+ @abstract   获取用户唯一标识
+ 
+ @since v3.0.3
+ */
++ (NSString *)userUID;
 
 @end

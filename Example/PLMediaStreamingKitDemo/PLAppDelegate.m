@@ -1,19 +1,16 @@
 //
 //  PLAppDelegate.m
-//  PLCameraStreamingKit
+//  PLMediaStreamingKit
 //
 //  Created on 01/10/2015.
 //  Copyright (c) Pili Engineering, Qiniu Inc. All rights reserved.
 //
 
 #import "PLAppDelegate.h"
-#import "PLViewController.h"
-#import <Fabric/Fabric.h>
-#import <Crashlytics/Crashlytics.h>
-#import <PLMediaStreamingKit/PLMediaStreamingKit.h>
 
-//TuSDK mark - 头文件
-#import <TuSDKManager.h>
+// PLMediaStreamSession 初始化配置界面
+#import "PLInitViewController.h"
+#import "TuSDKManager.h"
 
 @interface PLAppDelegate ()
 
@@ -26,34 +23,32 @@
     
     [Fabric with:@[[Crashlytics class]]];
 
-    [PLStreamingEnv initEnv];
     
-    NSLog(@"version is %@", [PLMediaStreamingSession versionInfo]);
-
+    // 设计用户唯一标识
+    NSString *userUid = [NSString stringWithFormat:@"%@_%@_demo_test",[[NSBundle mainBundle] bundleIdentifier],  [[UIDevice currentDevice] identifierForVendor].UUIDString];
+    // 1.初始化 StreamingSession 的运行环境
+    [PLStreamingEnv initEnvWithUserUID:userUid];
+    // 2.设置日志 log 等级
+    [PLStreamingEnv setLogLevel:PLStreamLogLevelDebug];
+    // 3.开启写 SDK 的日志文件到沙盒
+    [PLStreamingEnv enableFileLogging];
+    // 4.可添加设备 id 作为标识
+    [PLStreamingEnv setDeviceID:@"deviceId"];
+    
+    [[TuSDKManager sharedManager] initSdkWithAppKey:@"b1a4da40ad915817-03-bshmr1"];
+    [TUPEngine Init:nil];
+    NSLog(@"TuSDK版本号=======%@", lsqPulseSDKVersion);
+    
+    PLInitViewController *initViewController = [[PLInitViewController alloc] init];
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:[[PLViewController alloc]init]];
+    self.window.rootViewController = initViewController;
     self.window.backgroundColor = [UIColor whiteColor];
     self.window.rootViewController.view.frame = self.window.bounds;
     self.window.rootViewController.view.autoresizingMask = UIViewAutoresizingFlexibleWidth |
     UIViewAutoresizingFlexibleHeight;
     [self.window makeKeyAndVisible];
     
-    //[PLStreamingEnv setLogLevel:PLStreamLogLevelDebug];
-    [PLStreamingEnv enableFileLogging];
-    
-    // 可选: 设置日志输出级别 (默认不输出)
-    [TuSDKPulseCore setLogLevel:lsqLogLevelDEBUG];
-    
-    /**
-     *  初始化SDK，应用密钥是您的应用在 TuSDK 的唯一标识符。每个应用的包名(Bundle Identifier)、密钥、资源包(滤镜、贴纸等)三者需要匹配，否则将会报错。
-     *
-     *  @param appkey 应用秘钥 (请前往 http://tusdk.com 申请秘钥)
-     */
-    [[TuSDKManager sharedManager] initSdkWithAppKey:@"b1a4da40ad915817-03-bshmr1"];
-    [TUPEngine Init:nil];
-    
-    // 版本号输出
-//    NSLog(@"TuSDK.framework 的版本号 : %@", lsqPulseSDKCode);
     return YES;
 }
 
