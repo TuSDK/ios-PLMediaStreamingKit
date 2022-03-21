@@ -48,7 +48,9 @@ typedef NS_ENUM(NSUInteger, TTVideoPixelFormat) {
     /// YUV420P(I420) 格式
     TTVideoPixelFormat_YUV,
     /// BGRA 格式
-    TTVideoPixelFormat_BGRA
+    TTVideoPixelFormat_BGRA,
+    /// OpenGL 2D 纹理
+    TTVideoPixelFormat_Texture2D
 };
 
 /// 视频水印位置
