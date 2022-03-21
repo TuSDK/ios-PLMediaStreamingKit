@@ -11,10 +11,10 @@
 #import "PLShowDetailView.h"
 #import "PLInputTextView.h"
 #import "PLAssetReader.h"
-
+#import "TTLiveMediator.h"
+#import "TTViewManager.h"
 // 系统录屏 ReplayKit
 #import <ReplayKit/ReplayKit.h>
-#import "TuSDKManager.h"
 
 // 流状态 String
 static NSString *StreamState[] = {
@@ -43,7 +43,7 @@ static NSString *AudioFileError[] = {
 };
 
 // PreferredExtension
-static NSString *PLPreferredExtension = @"ccom.pili-engineering.PLMediaStreamingKitDemo.BroadcastUploadExtension";
+static NSString *PLPreferredExtension = @"com.qbox.PLMediaStreamingKitDemo.PLReplaykitExtension";
 
 @interface PLStreamViewController ()
 <
@@ -74,7 +74,6 @@ PLInputTextViewDelegate
 @property (nonatomic, strong) PLAudioCaptureConfiguration *audioCaptureConfiguration;
 // 音频流配置
 @property (nonatomic, strong) PLAudioStreamingConfiguration *audioStreamingConfiguration;
-
 // 推流混音播放器
 @property (nonatomic, strong) PLAudioPlayer *audioPlayer;
 
@@ -121,6 +120,15 @@ PLInputTextViewDelegate
     // 必须移除监听
     [self removeObservers];
     
+    // _mediaSession 退出不销毁，为保持下次进入 UI 保持一致，这里重置 default
+    [_pushImageView removeFromSuperview];
+    [_mediaSession clearWaterMark];
+    [_mediaSession setPushImage:nil];
+    _mediaSession.muted = NO;
+    [_mediaSession removeAllOverlayViews];
+    [self showDetailView:nil didClickIndex:0 currentType:PLSetDetailViewOrientaion];
+    [_mediaSession closeCurrentAudio];
+    
     // 销毁 PLMediaStreamingSession
     if (_mediaSession.isStreamingRunning) {
         [_mediaSession stopStreaming];
@@ -134,11 +142,10 @@ PLInputTextViewDelegate
         _streamSession.delegate = nil;
         _streamSession = nil;
     }
-    
+    [[TTLiveMediator shareInstance] destory];
+    [[TTViewManager shareInstance] destory];
     // 打印代表 PLStreamViewController 成功释放
     NSLog(@"[PLStreamViewController] dealloc !");
-    
-    
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -171,13 +178,11 @@ PLInputTextViewDelegate
     }
 }
 
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
-    
-    [[TuSDKManager sharedManager] setThirdPartyOrg:TuThirdPartyOrg_QiNiu];
-    [[TuSDKManager sharedManager] configTuSDKViewWithSuperView:self.view];
     
     if (_mediaSession) {
         _videoStreamConfiguration = _mediaSession.videoStreamingConfiguration;
@@ -273,6 +278,10 @@ PLInputTextViewDelegate
     
     // 添加退前后台监听处理
     [self addObservers];
+    
+    [[TTLiveMediator shareInstance] setPixelFormat:TTVideoPixelFormat_BGRA];
+    [[TTViewManager shareInstance] setBeautyTarget:[TTBeautyProxy transformObjc:[TTLiveMediator shareInstance]]];
+    [[TTViewManager shareInstance] setupSuperView:self.view];
 }
 
 #pragma mark - 音视频采集推流
@@ -353,15 +362,11 @@ PLInputTextViewDelegate
     }
     CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
      */
-    
-    
-    if (![TuSDKManager sharedManager].isInitFilterPipeline) {
-        return pixelBuffer;
+    CVPixelBufferRef ttPixelBuffer = [[[TTLiveMediator shareInstance] sendVideoPixelBuffer:pixelBuffer] getCVPixelBuffer];
+    if (ttPixelBuffer) {
+        return ttPixelBuffer;
     }
-    
-    CVPixelBufferRef newPixelBuffer = [[TuSDKManager sharedManager] syncProcessPixelBuffer:pixelBuffer];
-    
-    return newPixelBuffer;
+    return pixelBuffer;
 }
 
 // 麦克风采集的数据回调
@@ -595,6 +600,7 @@ PLInputTextViewDelegate
     }
 }
 
+
 #pragma mark - PLShowDetailViewDelegate
 - (void)showDetailView:(PLShowDetailView *)showDetailView didClickIndex:(NSInteger)index currentType:(PLSetDetailViewType)type {
     // 转换方向
@@ -766,6 +772,7 @@ PLInputTextViewDelegate
 
 // 开始/停止推流
 - (void)startStream:(UIButton *)button {
+
     // PLMediaStreamingSession
     if (_type == 0 || _type == 1) {
         // 开始/停止 推流
@@ -840,7 +847,8 @@ PLInputTextViewDelegate
 
 // 预览视图缩放
 - (void)zoomVideo:(UISlider *)slider {
-    _mediaSession.videoZoomFactor = slider.value;
+//    _mediaSession.videoZoomFactor = slider.value;
+    [[[TTLiveMediator shareInstance] getBeautyManager] setSmoothLevel:slider.value / slider.maximumValue];
 }
 
 // 刷新编码帧率，需要根据目标 expectedSourceVideoFrameRate 调整的，请按照如下实现方式
@@ -1086,7 +1094,6 @@ PLInputTextViewDelegate
         if (@available(iOS 11.0, *)) {
             [_streamSession stop];
             _startButton.selected = NO;
-            [_screenRecorder.cameraPreviewView removeFromSuperview];
             [_screenRecorder stopRecordingWithHandler:^(RPPreviewViewController * _Nullable previewViewController, NSError * _Nullable error) {
                 if (!error) {
                     NSLog(@"[PLStreamViewController] RPScreenRecorder stop recording success!");
@@ -1094,6 +1101,11 @@ PLInputTextViewDelegate
                     NSLog(@"[PLStreamViewController] RPScreenRecorder stop recording, error code %ld description %@", error.code, error.localizedDescription);
                 }
             }];
+            if (_screenRecorder.isRecording) {
+                [_screenRecorder stopCaptureWithHandler:nil];
+            }
+            
+            [_screenRecorder.cameraPreviewView removeFromSuperview];
         }
     }
 }
@@ -1243,6 +1255,7 @@ PLInputTextViewDelegate
         weakSelf.needRecordSystem = YES;
         weakSelf.startButton.hidden = YES;
         weakSelf.seiButton.hidden = YES;
+        [weakSelf startStream:_startButton];
     }];
     [alertViewController addAction:yesAction];
     

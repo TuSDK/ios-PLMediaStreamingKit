@@ -7,12 +7,12 @@
 		<key>BroadcastUploadExtension.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>8</integer>
+			<integer>3</integer>
 		</dict>
 		<key>BroadcastUploadExtensionSetupUI.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>9</integer>
+			<integer>1</integer>
 		</dict>
 		<key>PLMediaStreamingKitDemo.xcscheme_^#shared#^_</key>
 		<dict>

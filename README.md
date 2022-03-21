@@ -101,10 +101,4 @@ $ pod install
 
 当你遇到任何问题时，可以通过在 GitHub 的 repo 提交 issues 来反馈问题，请尽可能的描述清楚遇到的问题，如果有错误信息也一同附带，并且在 Labels 中指明类型为 bug 或者其他。
 
-## 商务合作
-电话：177-6716-7529
-邮箱：sales@tusdk.com
-QQ：2969573855
-联系地址：浙江省杭州市西湖区 西斗门路 9号 福地创业园1号楼3楼
-
 [通过这里查看已有的 issues 和提交 Bug。](https://github.com/pili-engineering/PLMediaStreamingKit/issues)

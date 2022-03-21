@@ -10,8 +10,7 @@
 
 // PLMediaStreamSession 初始化配置界面
 #import "PLInitViewController.h"
-#import "TuSDKManager.h"
-
+#import "TTLiveMediator.h"
 @interface PLAppDelegate ()
 
 @end
@@ -22,7 +21,6 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
     [Fabric with:@[[Crashlytics class]]];
-
     
     // 设计用户唯一标识
     NSString *userUid = [NSString stringWithFormat:@"%@_%@_demo_test",[[NSBundle mainBundle] bundleIdentifier],  [[UIDevice currentDevice] identifierForVendor].UUIDString];
@@ -35,10 +33,6 @@
     // 4.可添加设备 id 作为标识
     [PLStreamingEnv setDeviceID:@"deviceId"];
     
-    [[TuSDKManager sharedManager] initSdkWithAppKey:@"b1a4da40ad915817-03-bshmr1"];
-    [TUPEngine Init:nil];
-    NSLog(@"TuSDK版本号=======%@", lsqPulseSDKVersion);
-    
     PLInitViewController *initViewController = [[PLInitViewController alloc] init];
     
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -49,6 +43,10 @@
     UIViewAutoresizingFlexibleHeight;
     [self.window makeKeyAndVisible];
     
+    // com.pili-engineering.PLMediaStreamingKitDemo
+
+    // 初始化涂图
+    [TTLiveMediator setupWithAppKey:@"b1a4da40ad915817-03-bshmr1"];
     return YES;
 }
 
@@ -72,6 +70,7 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    [TTLiveMediator terminate];
 }
 
 @end
