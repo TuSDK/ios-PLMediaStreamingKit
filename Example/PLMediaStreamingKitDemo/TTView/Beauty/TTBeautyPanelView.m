@@ -524,7 +524,7 @@ static const CGFloat kBeautyListParamtersViewSpacing = 24;
     }];
     [alert addAction:cancelAction];
     [alert addAction:confimAction];
-    [[self currentViewController] presentViewController:alert animated:YES completion:nil];
+    [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:alert animated:YES completion:nil];
 }
 
 /// 获取当前的控制器
